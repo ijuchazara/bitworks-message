@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente de Pruebas - API Endpoints</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        h2 { color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        input, textarea, button { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        input[type="text"], input[type="email"] { width: 300px; }
+        textarea { width: 400px; height: 100px; resize: vertical; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; padding: 10px 20px; }
+        button:hover { background-color: #218838; }
+        .response { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; margin-top: 10px; }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .flex { display: flex; gap: 20px; }
+        .flex > div { flex: 1; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Cliente de Pruebas - API Endpoints</h1>
+        
+        <div class="flex">
+            <!-- Endpoint Mensaje -->
+            <div class="section">
+                <h2>📝 /mensaje</h2>
+                <div>
+                    <input type="email" id="emailMensaje" placeholder="Correo electrónico" />
+                    <br>
+                    <textarea id="textoMensaje" placeholder="Escribe tu mensaje aquí..."></textarea>
+                    <br>
+                    <button onclick="enviarMensaje()">Enviar Mensaje</button>
+                </div>
+                <div id="responseMensaje" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Endpoint Respuesta -->
+            <div class="section">
+                <h2>🤖 /respuesta</h2>
+                <div>
+                    <input type="email" id="emailRespuesta" placeholder="Correo electrónico" />
+                    <br>
+                    <textarea id="textoRespuesta" placeholder="Respuesta de la IA..."></textarea>
+                    <br>
+                    <button onclick="enviarRespuesta()">Enviar Respuesta IA</button>
+                </div>
+                <div id="responseRespuesta" class="response" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Endpoint Historia -->
+        <div class="section">
+            <h2>📚 /historia</h2>
+            <div>
+                <input type="email" id="emailHistoria" placeholder="Correo electrónico" />
+                <button onclick="obtenerHistoria()">Obtener Historia</button>
+            </div>
+            <div id="responseHistoria" class="response" style="display: none;"></div>
+        </div>
+
+        <!-- Prueba Rápida -->
+        <div class="section">
+            <h2>⚡ Prueba Rápida</h2>
+            <p>Simula una conversación completa:</p>
+            <input type="email" id="emailPrueba" placeholder="Correo para prueba" />
+            <button onclick="pruebaCompleta()">Ejecutar Prueba Completa</button>
+            <div id="responsePrueba" class="response" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        async function makeRequest(endpoint, params = {}) {
+            try {
+                const url = new URL(`${API_URL}${endpoint}`);
+                Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                return {
+                    success: response.ok,
+                    data: data,
+                    status: response.status
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    data: { error: error.message },
+                    status: 0
+                };
+            }
+        }
+
+        function showResponse(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `response ${result.success ? 'success' : 'error'}`;
+            
+            element.innerHTML = `
+                <strong>Status:</strong> ${result.status} ${result.success ? '✅' : '❌'}<br>
+                <strong>Response:</strong>
+                <pre>${JSON.stringify(result.data, null, 2)}</pre>
+            `;
+        }
+
+        async function enviarMensaje() {
+            const email = document.getElementById('emailMensaje').value;
+            const mensaje = document.getElementById('textoMensaje').value;
+            
+            if (!email || !mensaje) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            const result = await makeRequest('/mensaje', { correo: email, mensaje: mensaje });
+            showResponse('responseMensaje', result);
+        }
+
+        async function enviarRespuesta() {
+            const email = document.getElementById('emailRespuesta').value;
+            const respuesta = document.getElementById('textoRespuesta').value;
+            
+            if (!email || !respuesta) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            const result = await makeRequest('/respuesta', { correo: email, respuesta: respuesta });
+            showResponse('responseRespuesta', result);
+        }
+
+        async function obtenerHistoria() {
+            const email = document.getElementById('emailHistoria').value;
+            
+            if (!email) {
+                alert('Por favor ingresa un correo electrónico');
+                return;
+            }
+
+            const result = await makeRequest('/historia', { correo: email });
+            showResponse('responseHistoria', result);
+        }
+
+        async function pruebaCompleta() {
+            const email = document.getElementById('emailPrueba').value;
+            
+            if (!email) {
+                alert('Por favor ingresa un correo electrónico');
+                return;
+            }
+
+            const responseElement = document.getElementById('responsePrueba');
+            responseElement.style.display = 'block';
+            responseElement.className = 'response';
+            responseElement.innerHTML = '<strong>Ejecutando prueba completa...</strong>';
+
+            let log = [];
+
+            // 1. Enviar mensaje del usuario
+            log.push('1. Enviando mensaje del usuario...');
+            const mensaje1 = await makeRequest('/mensaje', { correo: email, mensaje: 'Hola, ¿cómo estás?' });
+            log.push(`   Resultado: ${mensaje1.success ? 'OK' : 'ERROR'} - ${JSON.stringify(mensaje1.data)}`);
+
+            // 2. Enviar respuesta de IA
+            log.push('2. Enviando respuesta de IA...');
+            const respuesta1 = await makeRequest('/respuesta', { correo: email, respuesta: '¡Hola! Estoy muy bien, gracias por preguntar. ¿En qué puedo ayudarte hoy?' });
+            log.push(`   Resultado: ${respuesta1.success ? 'OK' : 'ERROR'} - ${JSON.stringify(respuesta1.data)}`);
+
+            // 3. Otro mensaje del usuario
+            log.push('3. Enviando segundo mensaje del usuario...');
+            const mensaje2 = await makeRequest('/mensaje', { correo: email, mensaje: 'Me gustaría saber sobre el clima' });
+            log.push(`   Resultado: ${mensaje2.success ? 'OK' : 'ERROR'} - ${JSON.stringify(mensaje2.data)}`);
+
+            // 4. Otra respuesta de IA
+            log.push('4. Enviando segunda respuesta de IA...');
+            const respuesta2 = await makeRequest('/respuesta', { correo: email, respuesta: 'El clima hoy está soleado con una temperatura de 22°C. ¿Te gustaría saber algo más específico?' });
+            log.push(`   Resultado: ${respuesta2.success ? 'OK' : 'ERROR'} - ${JSON.stringify(respuesta2.data)}`);
+
+            // 5. Obtener historia
+            log.push('5. Obteniendo historia completa...');
+            const historia = await makeRequest('/historia', { correo: email });
+            log.push(`   Resultado: ${historia.success ? 'OK' : 'ERROR'}`);
+
+            responseElement.innerHTML = `
+                <strong>Prueba Completa Finalizada</strong><br><br>
+                <strong>Log de ejecución:</strong>
+                <pre>${log.join('\n')}</pre>
+                <br>
+                <strong>Historia final:</strong>
+                <pre>${JSON.stringify(historia.data, null, 2)}</pre>
+            `;
+        }
+
+        // Auto-completar emails en los campos cuando se escribe en uno
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailFields = ['emailMensaje', 'emailRespuesta', 'emailHistoria', 'emailPrueba'];
+            
+            emailFields.forEach(fieldId => {
+                document.getElementById(fieldId).addEventListener('input', function(e) {
+                    const value = e.target.value;
+                    emailFields.forEach(otherId => {
+                        if (otherId !== fieldId) {
+                            document.getElementById(otherId).value = value;
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
