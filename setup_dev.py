@@ -29,17 +29,14 @@ def setup_frontend():
 def main():
     print("🚀 Configurando entorno de desarrollo local...")
     
-    # Verificar Python
     if not run_command("python --version"):
         print("❌ Python no encontrado. Instala Python 3.8+")
         sys.exit(1)
     
-    # Verificar Node.js
     if not run_command("node --version"):
         print("❌ Node.js no encontrado. Instala Node.js 16+")
         sys.exit(1)
     
-    # Configurar servicios
     setup_python_services()
     setup_frontend()
     

@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://ismael:leamsi04@localhost:5432/ia_message")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://ismael:leamsi04@localhost:5432/ia_agent")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
